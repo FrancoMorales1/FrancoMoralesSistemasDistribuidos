@@ -1,51 +1,57 @@
-const axios = require('axios');
-const fs = require('fs');
+const pokeapi = require('./pokeapi');
+const util = require('./util');
 
-// Funcion hecha por CHATGPT (big charlie)
-async function downloadImage(url, filepath) {
-  const response = await axios({
-    url,
-    method: "GET",
-    responseType: "stream",
-  });
+var endpoint = "pokemon";
+var identificator = "";
+var limit = 30;
+var offset = 0;
+var target_pokemon = 'charizard';
 
-  return new Promise((resolve, reject) => {
-    response.data
-      .pipe(fs.createWriteStream(filepath))
-      .on("finish", () => resolve(filepath))
-      .on("error", reject);
-  });
-}
-
-async function getPokemonByUrl(pokeUrl) {
-    let response = await axios.get(pokeUrl);
-    return response.data;
-}
-
-async function getPokemonByName(pokeName) {
-    let response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokeName}`);
-    return response.data.results;
-}
-
-async function getManyPokemon(amount, offset) {
-    let response = await axios.get(`https://pokeapi.co/api/v2/pokemon?limit=${amount}&offset=${offset}`);
-    return response.data.results;
-}
-async function main () {
-    let result = await getManyPokemon(30, 0);
-
-    let pokeName = 'charizard'
-
-    console.log(result);
-    result.forEach( (element) => {
-        if (pokeName == element.name) {
-            getPokemonByUrl(element.url)
-            .then(pokeInfo => { 
-                console.log(pokeInfo)
-                downloadImage(pokeInfo.sprites.front_default, 'pokeSprite.png')
+async function main1 () {
+    pokeapi.getInformationWithEndpoint(endpoint, identificator, limit, offset)
+        .then( response => { return response.results})
+        .then( response => {
+            if (response != null) {
+                poke_list.forEach( (element) => {
+                    if (target_pokemon == element.name) {
+                        pokeapi.getInformationWithUrl(element.url)
+                        .then(pokemon_data => {
+                            util.downloadImage(pokemon_data.sprites.front_default, `image/${target_pokemon}.png`);
+                        })
+                        .catch( err => {util.errorHandler(err)})
+                    }
                 })
-        }
-    })
+            }
+        })
+        .catch( err => {util.errorHandler(err)})
+
+    let response = await pokeapi.getInformationWithEndpoint(endpoint, identificator, limit, offset);
+    let poke_list = response.results;
+    if (poke_list != null) {
+        poke_list.forEach( (element) => {
+            if (target_pokemon == element.name) {
+                pokeapi.getInformationWithUrl(element.url)
+                .then(pokemon_data => {
+                    util.downloadImage(pokemon_data.sprites.front_default, `image/${target_pokemon}.png`);
+                })
+            }
+        })
+    }
 }
 
-main()
+async function main2 () {
+    let response = await pokeapi.getInformationWithEndpoint(endpoint, identificator, limit, offset);
+    let poke_list = response.results;
+    if (poke_list != null) {
+        poke_list.forEach( (element) => {
+            if (target_pokemon == element.name) {
+                pokeapi.getInformationWithUrl(element.url)
+                .then(pokemon_data => {
+                    util.downloadImage(pokemon_data.sprites.front_default, `image/${target_pokemon}.png`);
+                })
+            }
+        })
+    }
+}
+
+main1()
