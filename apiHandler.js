@@ -17,7 +17,7 @@ async function getUsers() {
 async function getPostsWithId(user_id) {
     let response = null;
     try {
-        response = await axios.get(base_url+"posts?userId="+`/${user_id}`);
+        response = await axios.get(base_url+"posts?userId="+`${user_id}`);
         response = response.data;
     } catch (err) { 
         util.errorHandler(err);
